@@ -1,0 +1,39 @@
+version: "3"
+
+services:
+  alice:
+    build: alice
+    container_name: alice
+    restart: always
+    networks:
+      - local
+    depends_on:
+      - bob
+    links:
+      - bob:bob
+    command:
+      - /bin/bash
+      - -c
+      - |
+        for i in `seq 1 100000`; do curl -XGET -k http://bob; done
+
+
+  bob:
+    build: bob
+    container_name: bob
+    restart: always
+    networks:
+      - local
+    ports:
+      - 443:443
+      - 8080:80
+
+networks:
+  local:
+    external: false
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.32.0.0/16
+
